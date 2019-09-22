@@ -355,11 +355,33 @@
     ((_ e g0 g ...) (bind* (bind e g0) g ...))))
 
 ; -> SearchStream
+#;
 (define-syntax mplus*
   (syntax-rules ()
     ((_ e) e)
     ((_ e0 e ...) (mplus e0
                     (inc (mplus* e ...))))))
+
+
+(define-syntax mplus*
+  (syntax-rules ()
+    [(mplus* e1 e2 ...) (disj+ () () e1 e2 ...)]))
+
+(define-syntax disj2
+  (syntax-rules ()
+    [(disj2 e1 e2) (mplus e1 (inc e2))]))
+
+(define-syntax disj+
+  (syntax-rules ()
+    [(disj+ () () g) g]
+    [(disj+ (gl ...) (gr ...))
+     (disj2 (disj+ () () gl ...)
+            (disj+ () () gr ...))]
+    [(disj+ (gl ...) (gr ...) g0)
+     (disj2 (disj+ () () gl ...)
+            (disj+ () () g0 gr ...))]
+    [(disj+ (gl ...) (gr ...) ga g ... gz)
+     (disj+ (gl ... ga) (gz gr ...) g ...)]))
 
 ; -> Goal
 (define-syntax fresh
